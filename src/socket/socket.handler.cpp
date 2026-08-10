@@ -78,6 +78,6 @@ bool Socket::create_socket_server
         return false;
     }
 
-    std::cout << "Socket server up and listening at http://" << address << ":" << port << ".\nNote: [Ctrl+C] to shutdown.\n";
+    std::cout << "Socket server up and listening at http://" << address << ":" << port << ".\nWarning: If the web server do not appear as listening, do not run the server using administrator permissions but explicitly allow the web_server executable to use the port on your machine.\n\nNote: [Ctrl+C] to shutdown.\n";
     return true;
 }

@@ -1,6 +1,7 @@
 # Web server
 Deploy a website using this **socket** and **web server** made in C++ from scratch! <br/>
-To easily handle back-end with this web server, you have a new custom tag at your disposal for your HTML pages.
+To easily handle back-end with this web server, you have a new custom tag at your disposal for your HTML pages. <br/>
+**DO NOT RUN THIS WEB SERVER WITH ADMINISTRATOR PERMISSIONS.** If you have binding issues with the configured port, simply allow the web_server(.exe) binary to use this specific port.
 
 # ⚒️ Custom tag
 To build the back-end of your website in C++, this project offers you a new tag to directly use in your HTML pages: **`<++  ++>`**. To use it, you put the tag in your page, and give it a name. For instance, let's say I want to name this tag "*test*", I write this into the HTML page: **`<++ test ++>`**. Once it's done, in the function that you associated to a specific route, to replace this tag with actual data, you define a vector list to add `BackendData` objects to it, and use the helper functions to do the modifications for you. Let's imagine I want to replace my test tag with the message "*Hello World!*":

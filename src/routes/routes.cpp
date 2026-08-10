@@ -149,6 +149,7 @@ std::string Routes::make_server_response
         { ".mp4", "video/mp4" },
         { ".ogg", "application/ogg" },
         { ".png", "image/png" },
+        { ".svg", "image/svg" },
         { ".webm", "video/webm" },
         { ".xml", "application/xml" },
         { ".zip", "application/zip" }
