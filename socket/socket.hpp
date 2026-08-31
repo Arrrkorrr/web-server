@@ -1,15 +1,17 @@
-#ifndef APP_SOCKET_HPP
-#define APP_SOCKET_HPP
+#ifndef SOCKET_HPP
+#define SOCKET_HPP
 
 #include <string>
 
 #ifdef _WIN32
     #include <winsock2.h>
     #include <ws2tcpip.h>
+
     using socket_type = SOCKET;
 #else
     #define INVALID_SOCKET -1
     #define SOCKET_ERROR -1
+
     using socket_type = int;
 #endif
 
@@ -21,7 +23,8 @@ namespace Socket
 
     void handle_request
     (
-        const socket_type &client
+        const socket_type &client,
+        const int         &max_request_length
     );
 
     //////////////////////////////

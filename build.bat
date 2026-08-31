@@ -23,7 +23,7 @@ C:/mingw64/bin/mingw32-make.exe
 move web_server.exe ../out/
 cd ../out
 
-copy "..\..\..\config\socket.config" "./"
+copy "..\..\..\config\server.config" "./"
 pause
 
 cls
