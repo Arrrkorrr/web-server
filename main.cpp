@@ -1,8 +1,13 @@
-#include "src/app.hpp"
+#include "config/tweaks.hpp"
+#include "socket/socket.hpp"
+#include "routes/routes.hpp"
+#include "utils/files/files.hpp"
+#include "utils/logs/logs.hpp"
+#include "utils/miscellaneous/miscellaneous.hpp"
+#include "utils/parsers/parsers.hpp"
 
 #include <csignal>
-#include <cstdio>
-#include <iostream>
+#include <filesystem>
 #include <map>
 #include <string>
 #include <thread>
@@ -16,73 +21,114 @@
 #endif
 
 /*
-    Main function of the program.
+    Main function of the project.
 
     Tasks:
-        1) Parse the config file.
-        2) Verify the retrieved data.
-        3) Start a socket server.
-        4) Create a thread for each request to treat.
+        1) Handle the logs file.
+            a. Remove the old fsb.logs file if it exists.
+            b. Create a new fsb.logs file if the log file is turned on.
+        2) Register the server routes to use.
+        3) Load the configuration.
+            a. Parse the "socket.config" file.
+            b. Load the address, port and max retries settings if possible. Otherwise, we default to port 8080 and/or 5 max retries.
+        4) Try to create the socket to listen requests to a certain address on a certain port.
+        5) Set some signal handlers.
+            a. We ignore EPIPE errors that may trigger when the server sends data back but the client closed the connection before.
+            b. We handle [Ctrl+C] to cleanly close the web server instead of killing the process.
+        6) Handle requests made to the server.
+            a. Wait for a client request and try to retrieve some information.
+            b. Handle the request in a separate thread in order to free the loop and accept other client requests.
 
-    Parameters:
+    Parameters (variable_name / type / description):
         No parameters.
 
-    Returns:
-        An integer representing a success or error code.
+    Returns (type + description):
+        An integer containing the exit code of the program.
 */
 int main()
 {
-    std::cout << "The web server is booting up..\n";
+    ////////////////// 1) //////////////////
+    ///////// a. /////////
+    if (std::filesystem::exists("server.logs"))
+        std::filesystem::remove("server.logs");
 
-    App::Routes::register_routes();
-    std::map<std::string, std::string> config = App::Utils::Parsers::parse_config_file("socket.config");
+    ///////// b. /////////
+    if constexpr (Tweaks::ENABLE_LOGS_FILE)
+        Files::create_new_empty_file("server.logs");
 
+    ////////////////// 2) //////////////////
+    Logs::log("The web server is booting up..");
+    Routes::register_routes();
+
+    ////////////////// 3) //////////////////
+    ///////// a. /////////
+    std::map<std::string, std::string> config = Parsers::parse_config_file("server.config");
+
+    ///////// b. /////////
     const std::string address = config["ADDRESS"];
-    std::string port = config["PORT"];
-    std::string max_retries = config["MAX_RETRIES"];
+    const std::string conf_port = config["PORT"];
+    const std::string conf_max_retries = config["MAX_RETRIES"];
+    const std::string conf_max_length = config["MAX_REQUEST_LENGTH"];
 
-    if (!Utils::Text::is_an_integer(port))
+    int port, max_retries, max_request_length;
+
+    if (!Miscellaneous::is_an_integer(conf_port))
     {
-        std::cerr << "Warning: The retrieved port from the config file is not valid! Defaulted to 8080.\n";
-        port = "8080";
+        Logs::log("Warning: Configured port is not valid -> " + conf_port +  ". Defaulted to 8080.");
+        port = 8080;
     }
+    else port = std::stoi(conf_port);
 
-    if (!Utils::Text::is_an_integer(max_retries))
+    if (!Miscellaneous::is_an_integer(conf_max_retries))
     {
-        std::cerr << "Warning: The retrieved max retries value from the config file is not valid! Defaulted to 5.\n";
-        max_retries = "5";
+        Logs::log("Warning: Configured max retries is not valid -> " + conf_max_retries + ". Defaulted to 5.");
+        max_retries = 5;
     }
+    else max_retries = std::stoi(conf_max_retries);
 
+    if (!Miscellaneous::is_an_integer(conf_max_length))
+    {
+        Logs::log("Warning: Configured max request length is not valid -> " + conf_max_length + ". Defaulted to 100.");
+        max_request_length = 100;
+    }
+    else max_request_length = std::stoi(conf_max_length);
+
+    ////////////////// 4) //////////////////
     static socket_type server_socket;
-    const bool socket_creation = App::Socket::create_socket_server(address, std::stoi(max_retries), std::stoi(port), server_socket);
+    const bool socket_creation = Socket::create_socket_server(address, max_retries, port, server_socket);
 
     if (!socket_creation)
-    {
-        std::cerr << "Failed to create the socket server!\n";
-        exit(EXIT_FAILURE);
-    }
+        Logs::crash_log("Failed to create the socket server.\nPlease, verify the address (" + address + "), server permissions to listen port " + std::to_string(port) + ", and verify no other instance/program is already listening.");
 
+    ////////////////// 5) //////////////////
+    ///////// a. /////////
+    std::signal(SIGPIPE, SIG_IGN);
+
+    ///////// b. /////////
     std::signal(SIGINT, [](int)
     {
         shutdown(server_socket, SHUT_RD);
-        std::cout << "\nWeb server stopped successfully!\n";
+        Logs::log("\nThe web server did shut down.");
         exit(EXIT_SUCCESS);
     });
 
+    ////////////////// 6) //////////////////
     while (true)
     {
+        ///////// a. /////////
         struct sockaddr_in client_address;
-
         socklen_t request_size = sizeof(client_address);
+
         socket_type client = accept(server_socket, (struct sockaddr*) &client_address, &request_size);
 
         if (client == INVALID_SOCKET)
         {
-            std::cerr << "Warning: Failed to accept the client!\n";
+            Logs::log("Warning: Failed to accept invalid client.");
             continue;
         }
 
-        std::thread client_thread(App::Socket::handle_request, client);
+        ///////// b. /////////
+        std::thread client_thread(Socket::handle_request, client, max_request_length);
         client_thread.detach();
     }
 

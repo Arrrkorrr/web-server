@@ -21,7 +21,7 @@ struct BackendData
 ////////////////////////////////////////////////
 
 using run = std::function<std::string()>;
-inline std::unordered_map<std::string, run> routes; // inline to declare once!
+inline std::unordered_map<std::string, run> routes;
 
 ///////////////////////////////////////////////////
 //////////////////// Namespace ////////////////////
@@ -35,9 +35,17 @@ namespace Routes
 
     void register_routes();
 
-    std::string make_server_response
+    std::string generate_valid_html
     (
-        const std::string &path
+        const int         &http_code,
+        const std::string &page_content,
+        const std::string &response_type
+    );
+
+    std::string generate_server_response
+    (
+        const std::string &path,
+        const int         &max_request_length
     );
 
     ////////////////////////////
@@ -47,7 +55,7 @@ namespace Routes
     std::string replace_custom_tags
     (
         const std::vector<BackendData> &backend_data,
-        std::vector<std::string> &html_page
+        std::vector<std::string>       &html_page
     );
 }
 

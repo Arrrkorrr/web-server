@@ -3,21 +3,25 @@ project(web_server)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories (
-    ${CMAKE_SOURCE_DIR}/src/routes
-    ${CMAKE_SOURCE_DIR}/src/routes/pages
-    ${CMAKE_SOURCE_DIR}/src/socket
-    ${CMAKE_SOURCE_DIR}/src/utils/files
-    ${CMAKE_SOURCE_DIR}/src/utils/parsers
-    ${CMAKE_SOURCE_DIR}/src/utils/text
+    ${CMAKE_SOURCE_DIR}/routes
+    ${CMAKE_SOURCE_DIR}/routes/pages
+    ${CMAKE_SOURCE_DIR}/socket
+    ${CMAKE_SOURCE_DIR}/utils/files
+    ${CMAKE_SOURCE_DIR}/utils/logs
+    ${CMAKE_SOURCE_DIR}/utils/miscellaneous
+    ${CMAKE_SOURCE_DIR}/utils/parsers
+    ${CMAKE_SOURCE_DIR}/utils/text
 )
 
 file(GLOB MAIN main.cpp)
-file(GLOB ROUTES src/routes/*.cpp)
-file(GLOB ROUTES_PAGES src/routes/pages/*.cpp)
-file(GLOB SOCKET src/socket/*.cpp)
-file(GLOB UTILS_FILES src/utils/files/*.cpp)
-file(GLOB UTILS_PARSERS src/utils/parsers/*.cpp)
-file(GLOB UTILS_TEXT src/utils/text/*.cpp)
+file(GLOB ROUTES routes/*.cpp)
+file(GLOB ROUTES_PAGES routes/pages/*.cpp)
+file(GLOB SOCKET socket/*.cpp)
+file(GLOB UTILS_FILES utils/files/*.cpp)
+file(GLOB UTILS_LOGS utils/logs/*.cpp)
+file(GLOB UTILS_MISCELLANEOUS utils/miscellaneous/*.cpp)
+file(GLOB UTILS_PARSERS utils/parsers/*.cpp)
+file(GLOB UTILS_TEXT utils/text/*.cpp)
 
 set(ALL_SOURCES
     ${MAIN}
@@ -25,6 +29,9 @@ set(ALL_SOURCES
     ${ROUTES_PAGES}
     ${SOCKET}
     ${UTILS_FILES}
+    ${UTILS_LOGS}
+    ${UTILS_FILES}
+    ${UTILS_MISCELLANEOUS}
     ${UTILS_PARSERS}
     ${UTILS_TEXT}
 )

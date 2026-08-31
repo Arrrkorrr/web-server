@@ -5,15 +5,6 @@
 
 namespace Text
 {
-    ////////////////////////
-    ///// integers.cpp /////
-    ////////////////////////
-
-    bool is_an_integer
-    (
-        const std::string &input
-    );
-
     ////////////////////
     ///// trim.cpp /////
     ////////////////////

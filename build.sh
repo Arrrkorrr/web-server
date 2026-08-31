@@ -16,7 +16,7 @@ make
 mv web_server ../out
 cd ../out
 
-cp ../../../config/socket.config ./socket.config
+cp ../../../config/server.config ./server.config
 cp -r ../../../website ./
 chmod +x web_server
 
